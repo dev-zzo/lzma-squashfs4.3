@@ -1033,8 +1033,8 @@ int write_file(struct inode *inode, char *pathname)
 		if(block_list[i] == 0) /* sparse block */
 			block->buffer = NULL;
 		else {
-			block->buffer = cache_get(data_cache, start,
-				block_list[i]);
+			/* XXX: This is where an incorrect start is passed. */
+			block->buffer = cache_get(data_cache, start, block_list[i]);
 			start += c_byte;
 		}
 		queue_put(to_writer, block);
@@ -1783,11 +1783,11 @@ int read_super(char *source)
 	 */
 	read_fs_bytes(fd, SQUASHFS_START, sizeof(struct squashfs_super_block),
 		&sBlk_4);
-	swap = sBlk_4.s_magic != SQUASHFS_MAGIC;
+	swap = sBlk_4.s_magic == SQUASHFS_MAGIC_SWAP || sBlk_4.s_magic == SQUASHFS_MAGIC_LZMA_SWAP;
 	SQUASHFS_INSWAP_SUPER_BLOCK(&sBlk_4);
 
-	if(sBlk_4.s_magic == SQUASHFS_MAGIC && sBlk_4.s_major == 4 &&
-			sBlk_4.s_minor == 0) {
+	if((sBlk_4.s_magic == SQUASHFS_MAGIC || sBlk_4.s_magic == SQUASHFS_MAGIC_LZMA) && 
+			sBlk_4.s_major == 4 && sBlk_4.s_minor == 0) {
 		s_ops.squashfs_opendir = squashfs_opendir_4;
 		s_ops.read_fragment = read_fragment_4;
 		s_ops.read_fragment_table = read_fragment_table_4;
@@ -1796,10 +1796,14 @@ int read_super(char *source)
 		s_ops.read_uids_guids = read_uids_guids_4;
 		memcpy(&sBlk, &sBlk_4, sizeof(sBlk_4));
 
-		/*
-		 * Check the compression type
-		 */
-		comp = lookup_compressor_id(sBlk.s.compression);
+		if(sBlk_4.s_magic == SQUASHFS_MAGIC_LZMA) {
+			comp = lookup_compressor("lzma");
+		} else {
+			/*
+			 * Check the compression type
+			 */
+			comp = lookup_compressor_id(sBlk.s.compression);
+		}
 		return TRUE;
 	}
 
@@ -2110,9 +2114,11 @@ void *inflator(void *arg)
 			SQUASHFS_COMPRESSED_SIZE_BLOCK(entry->size), block_size,
 			&error);
 
-		if(res == -1)
+		if(res == -1) {
 			ERROR("%s uncompress failed (3) with error code %d\n",
 				comp->name, error);
+			/* EXIT_UNSQUASH("bleh\n"); */
+		}
 		else
 			memcpy(entry->data, tmp, res);
 
