@@ -1815,7 +1815,7 @@ int read_super(char *source)
 	 */
 	swap = 0;
 	if(sBlk_3.s_magic != SQUASHFS_MAGIC) {
-		if(sBlk_3.s_magic == SQUASHFS_MAGIC_SWAP) {
+		if(sBlk_3.s_magic == SQUASHFS_MAGIC_SWAP || sBlk_3.s_magic == SQUASHFS_MAGIC_LZMA_SWAP) {
 			squashfs_super_block_3 sblk;
 			ERROR("Reading a different endian SQUASHFS filesystem "
 				"on %s\n", source);
@@ -1891,9 +1891,13 @@ int read_super(char *source)
 	}
 
 	/*
-	 * 1.x, 2.x and 3.x filesystems use gzip compression.
+	 * Check the magic number to figure out compression.
 	 */
-	comp = lookup_compressor("gzip");
+	if (sBlk.s.s_magic == SQUASHFS_MAGIC_LZMA) {
+		comp = lookup_compressor("lzma");
+	} else {
+		comp = lookup_compressor("gzip");
+	}
 	return TRUE;
 
 failed_mount:
