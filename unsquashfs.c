@@ -701,7 +701,7 @@ int read_block(int fd, long long start, long long *next, int expected,
 			outlen, &error);
 
 		if(res == -1) {
-			ERROR("%s uncompress failed with error code %d\n",
+			ERROR("%s uncompress failed (1) with error code %d\n",
 				comp->name, error);
 			goto failed;
 		}
@@ -747,7 +747,7 @@ int read_data_block(long long start, unsigned int size, char *block)
 			block_size, &error);
 
 		if(res == -1) {
-			ERROR("%s uncompress failed with error code %d\n",
+			ERROR("%s uncompress failed (2) with error code %d\n",
 				comp->name, error);
 			goto failed;
 		}
@@ -2111,7 +2111,7 @@ void *inflator(void *arg)
 			&error);
 
 		if(res == -1)
-			ERROR("%s uncompress failed with error code %d\n",
+			ERROR("%s uncompress failed (3) with error code %d\n",
 				comp->name, error);
 		else
 			memcpy(entry->data, tmp, res);
