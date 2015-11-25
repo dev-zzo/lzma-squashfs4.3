@@ -29,7 +29,7 @@
 
 #define LZMA_HEADER_SIZE	(LZMA_PROPS_SIZE + 8)
 
-static int lzma_compress(void *strm, void *dest, void *src, int size, int block_size,
+int lzma_compress(void *strm, void *dest, void *src, int size, int block_size,
 		int *error)
 {
 	unsigned char *d = dest;
@@ -79,7 +79,7 @@ static int lzma_compress(void *strm, void *dest, void *src, int size, int block_
 }
 
 
-static int lzma_uncompress(void *dest, void *src, int size, int outsize,
+int lzma_uncompress(void *dest, void *src, int size, int outsize,
 	int *error)
 {
 	unsigned char *s = src;

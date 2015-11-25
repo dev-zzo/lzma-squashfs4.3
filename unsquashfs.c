@@ -1897,7 +1897,7 @@ int read_super(char *source)
 	 * Check the magic number to figure out compression.
 	 */
 	if (sBlk.s.s_magic == SQUASHFS_MAGIC_LZMA) {
-		comp = lookup_compressor("lzma");
+		comp = lookup_compressor("lzma+zlib");
 	} else {
 		comp = lookup_compressor("gzip");
 	}

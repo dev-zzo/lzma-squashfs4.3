@@ -75,6 +75,16 @@ GZIP_SUPPORT = 1
 LZMA_SUPPORT = 1
 LZMA_DIR = ./lzma
 
+
+########### Building LZMA+ZLIB support #############
+#
+# LZMA1 compression alternating with ZLIB.
+#
+# This is implemented by some 3rd party SquashFS users.
+#
+LZMA_ZLIB_SUPPORT = 1
+LZMA_DIR = ./lzma
+
 ######## Specifying default compression ########
 #
 # The next line specifies which compression algorithm is used by default
@@ -123,6 +133,13 @@ CFLAGS += $(EXTRA_CFLAGS) $(INCLUDEDIR) -D_FILE_OFFSET_BITS=64 \
 	-Wall
 
 LIBS = -lpthread -lm
+
+# Require both LZMA and GZIP in case of LZMA_ZLIB_SUPPORT
+ifeq ($(LZMA_ZLIB_SUPPORT),1)
+GZIP_SUPPORT = 1
+LZMA_SUPPORT = 1
+endif
+
 ifeq ($(GZIP_SUPPORT),1)
 CFLAGS += -DGZIP_SUPPORT
 MKSQUASHFS_OBJS += gzip_wrapper.o
@@ -175,6 +192,12 @@ MKSQUASHFS_OBJS += lz4_wrapper.o
 UNSQUASHFS_OBJS += lz4_wrapper.o
 LIBS += -llz4
 COMPRESSORS += lz4
+endif
+
+ifeq ($(LZMA_ZLIB_SUPPORT),1)
+CFLAGS += -DLZMA_ZLIB_SUPPORT
+MKSQUASHFS_OBJS += lzma_zlib_wrapper.o
+UNSQUASHFS_OBJS += lzma_zlib_wrapper.o
 endif
 
 ifeq ($(XATTR_SUPPORT),1)
