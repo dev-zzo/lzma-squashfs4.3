@@ -1033,7 +1033,6 @@ int write_file(struct inode *inode, char *pathname)
 		if(block_list[i] == 0) /* sparse block */
 			block->buffer = NULL;
 		else {
-			/* XXX: This is where an incorrect start is passed. */
 			block->buffer = cache_get(data_cache, start, block_list[i]);
 			start += c_byte;
 		}
@@ -2117,7 +2116,6 @@ void *inflator(void *arg)
 		if(res == -1) {
 			ERROR("%s uncompress failed (3) with error code %d\n",
 				comp->name, error);
-			/* EXIT_UNSQUASH("bleh\n"); */
 		}
 		else
 			memcpy(entry->data, tmp, res);
